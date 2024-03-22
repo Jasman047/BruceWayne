@@ -60,15 +60,49 @@ public class TicTacToe extends Application {
     }
 
     private boolean checkForWinner() {
-        // Implementation of checkForWinner remains the same as before
+        // Check rows
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (checkLine(buttons[i][0], buttons[i][1], buttons[i][2], buttons[i][3], buttons[i][4])) {
+                return true;
+            }
+        }
+        // Check columns
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (checkLine(buttons[0][i], buttons[1][i], buttons[2][i], buttons[3][i], buttons[4][i])) {
+                return true;
+            }
+        }
+        // Check diagonals
+        if (checkLine(buttons[0][0], buttons[1][1], buttons[2][2], buttons[3][3], buttons[4][4])) {
+            return true;
+        }
+        if (checkLine(buttons[0][4], buttons[1][3], buttons[2][2], buttons[3][1], buttons[4][0])) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkLine(Button b1, Button b2, Button b3, Button b4, Button b5) {
+        String text1 = b1.getText();
+        String text2 = b2.getText();
+        String text3 = b3.getText();
+        String text4 = b4.getText();
+        String text5 = b5.getText();
+        return !text1.isEmpty() && text1.equals(text2) && text1.equals(text3) && text1.equals(text4) && text1.equals(text5);
     }
 
     private boolean checkForDraw() {
-        // Implementation of checkForDraw remains the same as before
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (buttons[i][j].getText().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 }
-
