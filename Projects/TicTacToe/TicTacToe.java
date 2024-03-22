@@ -1,153 +1,100 @@
-import java.util.Random;
-import javafx.geometry.Insets;
+import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-
 public class TicTacToe extends Application {
-    private static final int SIZE = 5;
-    private static final int CELL_SIZE = 100;
-    private static final int WIN_COUNT = 5;
-
-    private Tile[][] board = new Tile[SIZE][SIZE];
-    private boolean playerXTurn = true;
-    private boolean gameEnded = false;
+    private static final int BOARD_SIZE = 5;
+    private Button[][] buttons;
+    private boolean playerX = true; // Player X starts the game
 
     @Override
     public void start(Stage primaryStage) {
-        GridPane root = new GridPane();
-        root.setPadding(new Insets(10));
-        root.setHgap(5);
-        root.setVgap(5);
+        GridPane gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
 
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                Tile tile = new Tile();
-                board[i][j] = tile;
-                root.add(tile, j, i);
+        buttons = new Button[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                Button button = new Button();
+                button.setPrefSize(50, 50);
+                button.setOnAction(e -> {
+                    if (!((Button) e.getSource()).getText().isEmpty()) {
+                        return;
+                    }
+                    if (playerX) {
+                        ((Button) e.getSource()).setText("X");
+                    } else {
+                        ((Button) e.getSource()).setText("O");
+                    }
+                    if (checkForWinner()) {
+                        String winner = playerX ? "Player X" : "Player O";
+                        System.out.println(winner + " wins!");
+                        primaryStage.close();
+                    } else if (checkForDraw()) {
+                        System.out.println("It's a draw!");
+                        primaryStage.close();
+                    } else {
+                        playerX = !playerX;
+                    }
+                });
+                buttons[i][j] = button;
+                gridPane.add(button, j, i);
             }
         }
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(gridPane, 300, 300);
+        primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Tic Tac Toe (5x5)");
         primaryStage.show();
-
-        // If it's the computer's turn, make a move
-        if (!playerXTurn) {
-            makeComputerMove();
-        }
     }
 
-    private void checkWin(int x, int y) {
-        int dx[] = {1, 0, 1, 1}; // horizontal, vertical, diagonal 1, diagonal 2
-        int dy[] = {0, 1, 1, -1};
-
-        char currentPlayer = playerXTurn ? 'X' : 'O';
-
-        for (int i = 0; i < 4; i++) {
-            int count = 1;
-            for (int j = 1; j < WIN_COUNT; j++) {
-                int newX = x + dx[i] * j;
-                int newY = y + dy[i] * j;
-                if (newX >= 0 && newX < SIZE && newY >= 0 && newY < SIZE &&
-                        board[newX][newY].getValue() == currentPlayer) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            for (int j = 1; j < WIN_COUNT; j++) {
-                int newX = x - dx[i] * j;
-                int newY = y - dy[i] * j;
-                if (newX >= 0 && newX < SIZE && newY >= 0 && newY < SIZE &&
-                        board[newX][newY].getValue() == currentPlayer) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            if (count >= WIN_COUNT) {
-                endGame(currentPlayer + " wins!");
-                return;
+    private boolean checkForWinner() {
+        // Check rows
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (checkLine(buttons[i][0], buttons[i][1], buttons[i][2], buttons[i][3], buttons[i][4])) {
+                return true;
             }
         }
+        // Check columns
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (checkLine(buttons[0][i], buttons[1][i], buttons[2][i], buttons[3][i], buttons[4][i])) {
+                return true;
+            }
+        }
+        // Check diagonals
+        if (checkLine(buttons[0][0], buttons[1][1], buttons[2][2], buttons[3][3], buttons[4][4])) {
+            return true;
+        }
+        if (checkLine(buttons[0][4], buttons[1][3], buttons[2][2], buttons[3][1], buttons[4][0])) {
+            return true;
+        }
+        return false;
+    }
 
-        // Check for draw
-        boolean draw = true;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                if (board[i][j].getValue() == ' ') {
-                    draw = false;
-                    break;
+    private boolean checkLine(Button b1, Button b2, Button b3, Button b4, Button b5) {
+        String text1 = b1.getText();
+        String text2 = b2.getText();
+        String text3 = b3.getText();
+        String text4 = b4.getText();
+        String text5 = b5.getText();
+        return !text1.isEmpty() && text1.equals(text2) && text1.equals(text3) && text1.equals(text4) && text1.equals(text5);
+    }
+
+    private boolean checkForDraw() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (buttons[i][j].getText().isEmpty()) {
+                    return false;
                 }
             }
         }
-        if (draw) {
-            endGame("It's a draw!");
-        }
-    }
-
-    private void endGame(String message) {
-        gameEnded = true;
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void makeComputerMove() {
-        Random rand = new Random();
-        int x, y;
-        do {
-            x = rand.nextInt(SIZE);
-            y = rand.nextInt(SIZE);
-        } while (board[x][y].getValue() != ' ');
-
-        board[x][y].setValue(playerXTurn ? 'X' : 'O');
-        board[x][y].setFill(playerXTurn ? Color.BLUE : Color.RED);
-        playerXTurn = !playerXTurn;
-        checkWin(x, y);
-    }
-
-    private class Tile extends Rectangle {
-        private char value;
-
-        public Tile() {
-            super(CELL_SIZE, CELL_SIZE);
-            setFill(Color.WHITE);
-            setStroke(Color.BLACK);
-            setOnMouseClicked(e -> handleClick());
-        }
-
-        public char getValue() {
-            return value;
-        }
-
-        public void setValue(char value) {
-            this.value = value;
-        }
-
-        private void handleClick() {
-            if (gameEnded || value != ' ') {
-                return;
-            }
-            value = playerXTurn ? 'X' : 'O';
-            setFill(playerXTurn ? Color.BLUE : Color.RED);
-            playerXTurn = !playerXTurn;
-            checkWin(GridPane.getRowIndex(this), GridPane.getColumnIndex(this));
-
-            // After player's move, if game hasn't ended, it's computer's turn
-            if (!gameEnded && !playerXTurn) {
-                makeComputerMove();
-            }
-        }
+        return true;
     }
 
     public static void main(String[] args) {
