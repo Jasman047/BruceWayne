@@ -1,4 +1,4 @@
-import javafx.application.Application;
+import java.util.Random;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+
 
 public class TicTacToe extends Application {
     private static final int SIZE = 5;
@@ -36,6 +37,11 @@ public class TicTacToe extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Tic Tac Toe (5x5)");
         primaryStage.show();
+
+        // If it's the computer's turn, make a move
+        if (!playerXTurn) {
+            makeComputerMove();
+        }
     }
 
     private void checkWin(int x, int y) {
@@ -96,6 +102,20 @@ public class TicTacToe extends Application {
         alert.showAndWait();
     }
 
+    private void makeComputerMove() {
+        Random rand = new Random();
+        int x, y;
+        do {
+            x = rand.nextInt(SIZE);
+            y = rand.nextInt(SIZE);
+        } while (board[x][y].getValue() != ' ');
+
+        board[x][y].setValue(playerXTurn ? 'X' : 'O');
+        board[x][y].setFill(playerXTurn ? Color.BLUE : Color.RED);
+        playerXTurn = !playerXTurn;
+        checkWin(x, y);
+    }
+
     private class Tile extends Rectangle {
         private char value;
 
@@ -122,6 +142,11 @@ public class TicTacToe extends Application {
             setFill(playerXTurn ? Color.BLUE : Color.RED);
             playerXTurn = !playerXTurn;
             checkWin(GridPane.getRowIndex(this), GridPane.getColumnIndex(this));
+
+            // After player's move, if game hasn't ended, it's computer's turn
+            if (!gameEnded && !playerXTurn) {
+                makeComputerMove();
+            }
         }
     }
 
