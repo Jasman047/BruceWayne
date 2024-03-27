@@ -1,5 +1,3 @@
-package Projects.Fibonacci;
-
 public class Fibonacci {
 
     // Function to calculate Fibonacci numbers iteratively
